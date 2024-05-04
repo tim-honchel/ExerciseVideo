@@ -1,0 +1,153 @@
+﻿@page
+@model ExerciseVideo.Pages.WorkoutModel
+@using ExerciseVideo.Data
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Workout</title>
+    <link href="~/css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
+</head>
+
+<body class="body">
+
+    <p id="spanExercise" class="display-6 text-center">
+        Workout Time
+    </p>
+
+    <p id="spanTimer" class="display-1 text-center">
+        ...
+    </p>
+
+    <div class="d-flex justify-content-center">
+        <button id="btnStart" class="btn btn-primary" onclick="start()">Start</button>
+        <button id="btnPause" class="disabled" disabled="true" onclick="pause()">Pause</button>
+        <button id="btnReset" class="disabled" disabled="true" onclick="reset()">Reset</button>
+    </div>
+
+
+    @if (Model.Exercises != null)
+    {
+        <table class="table table=striped">
+            <thead>
+                <tr>
+                    <th>Exercise</th>
+                    <th>Seconds</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Exercise exercise in Model.Exercises)
+                {
+                    <tr id="@("row"+exercise.Order)">
+                        <td>
+                            @exercise.Name
+                        </td>
+                        <td>
+                            @exercise.Time
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <br />
+
+    
+
+    <br />
+    <br />
+
+
+    
+
+</body>
+
+
+<script type="text/javascript">
+
+    var exercises = new Array();
+    var timers = new Array();
+
+    var start = () => {
+        @if (Model.Exercises != null)
+        {
+            foreach (var exercise in Model.Exercises)
+            {
+                @:exercises.push({ Name: "@exercise.Name", Time: "@exercise.Time" });
+            }
+        }
+        var interval = 3000;
+        displayExerciseName("Get Ready!");
+        setExerciseTimers(3,interval);
+        for (let i = 0; i < exercises.length; i++) {
+            var timer = setTimeout(function() {displayExerciseName(exercises[i].Name); updateExerciseTable(i);}, interval);
+            timers.push(timer);
+            interval += exercises[i].Time * 1000;
+            setExerciseTimers(exercises[i].Time, interval);      
+        }
+        var timer = setTimeout(function () { displayExerciseName("Finished!") }, interval);
+        timers.push(timer);
+        document.getElementById("btnStart").disabled = true;
+        document.getElementById("btnStart").className = "false";
+        document.getElementById("btnPause").disabled = false;
+        document.getElementById("btnPause").className = "btn-primary";
+        document.getElementById("btnReset").disabled = false;
+        document.getElementById("btnReset").className = "btn-primary";
+    }
+
+    var displayExerciseName = (name) => {
+        document.getElementById("spanExercise").textContent = name;
+    }
+
+    var updateExerciseTable = (row) => {
+        document.getElementById("row" + row).className = "table-primary";
+        if (row > 0) {
+            document.getElementById("row" + (row - 1)).className = "table-secondary";
+        }
+    }
+
+    var setExerciseTimers = (exerciseDuration, interval) => {
+        for (let i = exerciseDuration; i > 0; i --) {
+            var timer = setTimeout(function () { displayExerciseTime(i) }, interval - i *1000);
+            timers.push(timer);
+        }
+        var timer = setTimeout(function () { displayExerciseTime("") }, interval);
+        timers.push(timer);
+    }
+
+    var displayExerciseTime = (time) => {
+        document.getElementById("spanTimer").textContent = time;
+    }
+
+    var pause = () => {
+        timers.forEach(clearTimeout);
+        timers.length = 0;
+        document.getElementById("btnStart").disabled = false;
+        document.getElementById("btnStart").className = "btn-primary";
+        document.getElementById("btnPause").disabled = true;
+        document.getElementById("btnPause").className = "disabled";
+    }
+
+
+    var reset = () => {
+        timers.forEach(clearTimeout);
+        timers.length = 0;
+        document.getElementById("btnStart").disabled = false;
+        document.getElementById("btnStart").className = "btn-primary";
+        document.getElementById("btnReset").disabled = true;
+        document.getElementById("btnReset").className = "disabled";
+        displayExerciseName("Workout Time");
+        displayExerciseTime("...");
+        for (let i = 0; i < exercises.length; i++)
+        {
+            document.getElementById("row" + i).className = "";
+            row ++;
+        }
+    }
+
+</script>
