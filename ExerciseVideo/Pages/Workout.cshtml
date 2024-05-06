@@ -44,7 +44,7 @@
                 {
                     <tr id="@("row"+exercise.Order)">
                         <td>
-                            @exercise.Name
+                            <button id="btnExercise" class="btn btn-link" onclick="goToExercise(@exercise.Order)">@exercise.Name</button>
                         </td>
                         <td>
                             @exercise.Time
@@ -68,86 +68,128 @@
 </body>
 
 
-<script type="text/javascript">
-
+<script type="text/javascript"> 
+    
     var exercises = new Array();
-    var timers = new Array();
+    var mode;
+    var row;
+    var seconds;
+    var timer;
 
-    var start = () => {
+    window.onload = buildExerciseArray;
+
+    function buildExerciseArray() {
+
         @if (Model.Exercises != null)
         {
+            @:exercises.push({ Name: "Get Ready...", Time: 3 });
             foreach (var exercise in Model.Exercises)
             {
                 @:exercises.push({ Name: "@exercise.Name", Time: "@exercise.Time" });
             }
+            @:exercises.push({ Name: "Finished!", Time: 0 });
         }
-        var interval = 3000;
-        displayExerciseName("Get Ready!");
-        setExerciseTimers(3,interval);
-        for (let i = 0; i < exercises.length; i++) {
-            var timer = setTimeout(function() {displayExerciseName(exercises[i].Name); updateExerciseTable(i);}, interval);
-            timers.push(timer);
-            interval += exercises[i].Time * 1000;
-            setExerciseTimers(exercises[i].Time, interval);      
+        if (exercises.length == 0) {
+            disableStart();
         }
-        var timer = setTimeout(function () { displayExerciseName("Finished!") }, interval);
-        timers.push(timer);
-        document.getElementById("btnStart").disabled = true;
-        document.getElementById("btnStart").className = "false";
-        document.getElementById("btnPause").disabled = false;
-        document.getElementById("btnPause").className = "btn-primary";
-        document.getElementById("btnReset").disabled = false;
-        document.getElementById("btnReset").className = "btn-primary";
+
     }
 
-    var displayExerciseName = (name) => {
-        document.getElementById("spanExercise").textContent = name;
-    }
-
-    var updateExerciseTable = (row) => {
-        document.getElementById("row" + row).className = "table-primary";
-        if (row > 0) {
-            document.getElementById("row" + (row - 1)).className = "table-secondary";
+    var countdown = () => {
+        updateDisplay();
+        seconds--;
+        if (seconds < 0 && row < (exercises.length - 1)) {
+            row++;
+            seconds = exercises[row].Time;
+        }
+        else if (seconds < 0) {
+            mode = "finished";
+            clearInterval(timer);
+            enableButton("btnReset");
+            disableButton("btnPause");
         }
     }
-
-    var setExerciseTimers = (exerciseDuration, interval) => {
-        for (let i = exerciseDuration; i > 0; i --) {
-            var timer = setTimeout(function () { displayExerciseTime(i) }, interval - i *1000);
-            timers.push(timer);
-        }
-        var timer = setTimeout(function () { displayExerciseTime("") }, interval);
-        timers.push(timer);
+    
+    var disableButton = (buttonId) => {
+        document.getElementById(buttonId).disabled = true;
+        document.getElementById(buttonId).className = "disabled";
     }
 
-    var displayExerciseTime = (time) => {
-        document.getElementById("spanTimer").textContent = time;
+    var enableButton = (buttonId) => {
+        document.getElementById(buttonId).disabled = false;
+        document.getElementById(buttonId).className = "btn-primary";
+    }
+
+    var goToExercise = (exerciseId) => {
+        row = (exerciseId + 1);
+        seconds = exercises[row].Time;
+        for (let i = 0; i < exerciseId; i++) {
+            document.getElementById("row" + i).className = "table-secondary";
+        }
+        for (let i = (exerciseId + 1); i < exercises.length - 2; i++) {
+            document.getElementById("row" + i).className = "";
+        }
+        document.getElementById("btnStart").textContent = "Resume";
+        pause();
+        mode = "goto";
+        updateDisplay();
     }
 
     var pause = () => {
-        timers.forEach(clearTimeout);
-        timers.length = 0;
-        document.getElementById("btnStart").disabled = false;
-        document.getElementById("btnStart").className = "btn-primary";
-        document.getElementById("btnPause").disabled = true;
-        document.getElementById("btnPause").className = "disabled";
+        mode = "pause";
+        clearInterval(timer);
+        enableButton("btnStart");
+        enableButton("btnReset");
+        disableButton("btnPause");
     }
 
-
     var reset = () => {
-        timers.forEach(clearTimeout);
-        timers.length = 0;
-        document.getElementById("btnStart").disabled = false;
-        document.getElementById("btnStart").className = "btn-primary";
-        document.getElementById("btnReset").disabled = true;
-        document.getElementById("btnReset").className = "disabled";
-        displayExerciseName("Workout Time");
-        displayExerciseTime("...");
-        for (let i = 0; i < exercises.length; i++)
+        mode = null;
+        document.getElementById("btnStart").textContent = "Start";
+        enableButton("btnStart");
+        disableButton("btnPause");
+        disableButton("btnReset");
+        resetDisplay();
+    }
+
+    var resetDisplay = () => {
+        document.getElementById("spanExercise").textContent = "Workout Time";
+        document.getElementById("spanTimer").textContent = "...";
+        for (let i = 0; i < exercises.length - 2; i++)
+            {
+                document.getElementById("row" + i).className = "";
+            }
+    }
+
+    var start = () => {
+       
+        if (mode == null) {
+            row = 0;
+            seconds = exercises[row].Time;
+            document.getElementById("btnStart").textContent = "Resume";
+            countdown();
+        }
+        else if (mode == "goto") {
+            countdown();
+        }
+        mode = "play";
+        enableButton("btnPause");
+        disableButton("btnReset");
+        disableButton("btnStart");
+        timer = setInterval(countdown, 1000);
+
+    }
+
+    var updateDisplay = () => {
+        document.getElementById("spanExercise").textContent = exercises[row].Name;
+        document.getElementById("spanTimer").textContent = seconds;
+        if (row > 0 && row < exercises.length - 1)
         {
-            document.getElementById("row" + i).className = "";
-            row ++;
+            document.getElementById("row" + (row - 1)).className = "table-primary";
+        }
+        if (row > 1) {
+            document.getElementById("row" + (row - 2)).className = "table-secondary";
         }
     }
 
-</script>
+    </script>

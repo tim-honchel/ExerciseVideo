@@ -13,8 +13,8 @@ namespace ExerciseVideo.Pages
             //Exercises = new Exercise[]
             //{
             //    new Exercise() {Name = "Arm Swings", Time = 5, Order= 0 },
-            //    new Exercise() {Name = "Forward Arm Circles", Time = 3, Order = 1 },
-            //    new Exercise() {Name = "Reverse Arm Circles", Time = 3, Order = 2}
+            //    new Exercise() {Name = "Forward Arm Circles", Time = 5, Order = 1 },
+            //    new Exercise() {Name = "Reverse Arm Circles", Time = 5, Order = 2}
             //};
 
             Exercises = new Exercise[]
