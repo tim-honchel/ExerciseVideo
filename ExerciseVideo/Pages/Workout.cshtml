@@ -96,31 +96,66 @@
     }
 
     var countdown = () => {
-        updateDisplay();
-        seconds--;
-        if (seconds < 0 && row < (exercises.length - 1)) {
-            row++;
-            seconds = exercises[row].Time;
+        console.log("countdown:" + row + "|" + seconds);
+        updateExerciseDisplay();
+        if (seconds == 0 && row < (exercises.length - 1)) {
+            if (@Model.TransitionTime > 0) {
+                stopTimer();
+            }
+            transition();
         }
-        else if (seconds < 0) {
+        else if (seconds == 0 && row >= (exercises.length - 1)) {
             mode = "finished";
-            clearInterval(timer);
+            stopTimer();
             enableButton("btnReset");
             disableButton("btnPause");
+        }
+        else {
+            seconds--;
         }
     }
     
     var disableButton = (buttonId) => {
+        console.log("disableButton:" + buttonId);
         document.getElementById(buttonId).disabled = true;
         document.getElementById(buttonId).className = "disabled";
     }
 
     var enableButton = (buttonId) => {
+        console.log("enableButton:" + buttonId);
         document.getElementById(buttonId).disabled = false;
         document.getElementById(buttonId).className = "btn-primary";
     }
 
+    var flashEmptyTitle = () => {
+        console.log("flashEmptyTitle");
+        document.getElementById("spanExercise").style.color = "white";
+        document.getElementById("spanTimer").style.color = "white";
+    }
+
+    var flashTemporaryTitle = () => {
+        var dots = (document.getElementById("spanTimer").textContent.split('.').length - 1) / 2
+        console.log("flashTemporaryTitle:" + dots);
+        if (dots == 0) {
+            updateTableDisplay();
+            document.getElementById("spanExercise").textContent = exercises[row].Name;
+            document.getElementById("spanTimer").textContent = "..." + seconds + "...";
+            document.getElementById("spanExercise").style.color = "black";
+            document.getElementById("spanTimer").style.color = "black";
+        }
+        else if (dots == 3) {
+            document.getElementById("spanTimer").textContent = ".." + seconds + "..";
+        }
+        else if (dots == 2) {
+            document.getElementById("spanTimer").textContent = "." + seconds + ".";
+        }
+        else if (dots == 1) {
+            document.getElementById("spanTimer").textContent = seconds;
+        }
+    }
+
     var goToExercise = (exerciseId) => {
+        console.log("gotoExercise:" + exerciseId);
         row = (exerciseId + 1);
         seconds = exercises[row].Time;
         for (let i = 0; i < exerciseId; i++) {
@@ -132,18 +167,21 @@
         document.getElementById("btnStart").textContent = "Resume";
         pause();
         mode = "goto";
-        updateDisplay();
+        updateExerciseDisplay();
+        updateTableDisplay();
     }
 
     var pause = () => {
+        console.log("pause");
         mode = "pause";
-        clearInterval(timer);
+        stopTimer();
         enableButton("btnStart");
         enableButton("btnReset");
         disableButton("btnPause");
     }
 
     var reset = () => {
+        console.log("reset");
         mode = null;
         document.getElementById("btnStart").textContent = "Start";
         enableButton("btnStart");
@@ -153,6 +191,7 @@
     }
 
     var resetDisplay = () => {
+        console.log("resetDisplay");
         document.getElementById("spanExercise").textContent = "Workout Time";
         document.getElementById("spanTimer").textContent = "...";
         for (let i = 0; i < exercises.length - 2; i++)
@@ -162,7 +201,7 @@
     }
 
     var start = () => {
-       
+       console.log("start");
         if (mode == null) {
             row = 0;
             seconds = exercises[row].Time;
@@ -176,15 +215,48 @@
         enableButton("btnPause");
         disableButton("btnReset");
         disableButton("btnStart");
-        timer = setInterval(countdown, 1000);
+        startTimer();
 
     }
 
-    var updateDisplay = () => {
+    var startTimer = () => {
+        console.log("startTimer");
+        timer = setInterval(countdown, 1000);
+    }
+
+    var stopTimer = () => {
+        console.log("stopTimer");
+        clearInterval(timer);
+    }
+
+    var transition = () => {
+        console.log("transition");
+        updateExerciseDisplay();
+        row++;
+        seconds = exercises[row].Time;
+        if (@Model.TransitionTime > 0 && row < exercises.length - 1) {
+            setTimeout(flashEmptyTitle, 1000);
+            setTimeout(flashTemporaryTitle, @Model.TransitionTime * 0.25 * 1000 + 1000);
+            setTimeout(flashTemporaryTitle, @Model.TransitionTime * 0.5 * 1000 + 1000);
+            setTimeout(flashTemporaryTitle, @Model.TransitionTime * 0.75 * 1000 + 1000);
+            setTimeout(flashTemporaryTitle, @Model.TransitionTime * 1000 + 1000);
+            setTimeout(startTimer, (@Model.TransitionTime) * 1000);
+        }
+        else if (@Model.TransitionTime > 0) {
+            updateExerciseDisplay();
+            startTimer();
+        }
+    }
+
+    var updateExerciseDisplay = () => {
+        console.log("updateExerciseDisplay");
         document.getElementById("spanExercise").textContent = exercises[row].Name;
         document.getElementById("spanTimer").textContent = seconds;
-        if (row > 0 && row < exercises.length - 1)
-        {
+    }
+
+    var updateTableDisplay = () => {
+        console.log("updateTableDisplay");
+        if (row > 0 && row < exercises.length - 1) {
             document.getElementById("row" + (row - 1)).className = "table-primary";
         }
         if (row > 1) {
