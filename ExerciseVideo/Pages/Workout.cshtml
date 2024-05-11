@@ -71,7 +71,8 @@
 <script type="text/javascript"> 
     
     const audioTypes = {
-        EndExercise: "endExercise"
+        EndExercise: "endExercise",
+        SecondTick: "secondTick"
     }
     const modes = {
         Finished: "finished",
@@ -79,18 +80,19 @@
         Pause: "pause",
         Play: "play"
     }
-    const sounds = {
-        AudioEndExercise: 'audioEndExercise'
-    }
+
     const soundFilepaths = {
-        AudioEndExercise: 'audio/bell.mp3'
+        AudioEndExercise: 'audio/bell.mp3',
+        AudioSecondTick: 'audio/tick.mp3'
     }
 
     var audio = {
-        EndExercise: null
+        EndExercise: null,
+        SecondTick: null
     }
     var audioEnabled = {
         EndExercise: null,
+        SecondTick: null,
         SpeakExercise: null
     };
     var exercises = new Array();
@@ -109,12 +111,22 @@
     }
 
     var buildAudio = () => {
+        
         log("buildAudio");
+
         audioEnabled.EndExercise = @Model.AudioEndExercise.ToString().ToLower();
         if (audioEnabled.EndExercise == true) {
             audio.EndExercise = new Audio(soundFilepaths.AudioEndExercise);
         }
+        
+        audioEnabled.SecondTick = @Model.AudioSecondTick.ToString().ToLower();
+        if (audioEnabled.SecondTick == true)
+        {
+            audio.SecondTick = new Audio(soundFilepaths.AudioSecondTick);
+        }
+
         audioEnabled.SpeakExercise = @Model.AudioSpeakExercise.ToString().ToLower();
+    
     }
 
     var buildExerciseArray = () => {
@@ -152,6 +164,9 @@
         }
         else {
             seconds--;
+            if (audioEnabled.SecondTick == true) {
+                playAudio(audioTypes.SecondTick);
+            }
         }
     }
     
@@ -228,6 +243,9 @@
         log("playAudio:" + sound);
         if (sound == audioTypes.EndExercise && audioEnabled.EndExercise == true) {
             audio.EndExercise.play();
+        }
+        if (sound == audioTypes.SecondTick) {
+            audio.SecondTick.play();
         }
     }
 

@@ -8,6 +8,7 @@ namespace ExerciseVideo.Pages
     public class WorkoutModel : PageModel
     {
         public bool AudioEndExercise;
+        public bool AudioSecondTick;
         public bool AudioSpeakExercise;
         public Exercise[]? Exercises;
         public int TransitionTime;
@@ -37,6 +38,7 @@ namespace ExerciseVideo.Pages
             //};
 
             AudioEndExercise = true;
+            AudioSecondTick = true;
             AudioSpeakExercise = true;
             TransitionTime = 2;
         }
