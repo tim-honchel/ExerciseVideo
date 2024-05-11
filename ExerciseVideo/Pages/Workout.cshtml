@@ -73,18 +73,19 @@
     const audioTypes = {
         EndExercise: "endExercise"
     }
-
+    const modes = {
+        Finished: "finished",
+        Goto: "goto",
+        Pause: "pause",
+        Play: "play"
+    }
     const sounds = {
         AudioEndExercise: 'audioEndExercise'
     }
-
     const soundFilepaths = {
         AudioEndExercise: 'audio/bell.mp3'
     }
 
-
-
-    //var audioEndExercise;
     var audio = {
         EndExercise: null
     }
@@ -100,14 +101,15 @@
     window.onload = setup;
 
     function setup() {
-        console.log("setup");
+        //console.log("setup");
+        log("setup");
         buildExerciseArray();
         buildAudio();
         
     }
 
     var buildAudio = () => {
-        console.log("buildAudio");
+        log("buildAudio");
         audioEnabled.EndExercise = @Model.AudioEndExercise.ToString().ToLower();
         if (audioEnabled.EndExercise == true) {
             audio.EndExercise = new Audio(soundFilepaths.AudioEndExercise);
@@ -116,7 +118,7 @@
 
     var buildExerciseArray = () => {
 
-        console.log("buildExerciseArray");
+        log("buildExerciseArray");
         @if (Model.Exercises != null)
         {
             @:exercises.push({ Name: "Get Ready...", Time: 3 });
@@ -133,7 +135,7 @@
     }
 
     var countdown = () => {
-        console.log("countdown:" + row + "|" + seconds);
+        log("countdown:" + row + "|" + seconds);
         updateExerciseDisplay();
         if (seconds == 0 && row < (exercises.length - 1)) {
             if (@Model.TransitionTime > 0) {
@@ -142,7 +144,7 @@
             transition();
         }
         else if (seconds == 0 && row >= (exercises.length - 1)) {
-            mode = "finished";
+            mode = modes.Finished;
             stopTimer();
             enableButton("btnReset");
             disableButton("btnPause");
@@ -153,26 +155,26 @@
     }
     
     var disableButton = (buttonId) => {
-        console.log("disableButton:" + buttonId);
+        log("disableButton:" + buttonId);
         document.getElementById(buttonId).disabled = true;
         document.getElementById(buttonId).className = "disabled";
     }
 
     var enableButton = (buttonId) => {
-        console.log("enableButton:" + buttonId);
+        log("enableButton:" + buttonId);
         document.getElementById(buttonId).disabled = false;
         document.getElementById(buttonId).className = "btn-primary";
     }
 
     var flashEmptyTitle = () => {
-        console.log("flashEmptyTitle");
+        log("flashEmptyTitle");
         document.getElementById("spanExercise").style.color = "white";
         document.getElementById("spanTimer").style.color = "white";
     }
 
     var flashTemporaryTitle = () => {
         var dots = (document.getElementById("spanTimer").textContent.split('.').length - 1) / 2
-        console.log("flashTemporaryTitle:" + dots);
+        log("flashTemporaryTitle:" + dots);
         if (dots == 0) {
             updateTableDisplay();
             document.getElementById("spanExercise").textContent = exercises[row].Name;
@@ -192,7 +194,7 @@
     }
 
     var goToExercise = (exerciseId) => {
-        console.log("gotoExercise:" + exerciseId);
+        log("gotoExercise:" + exerciseId);
         row = (exerciseId + 1);
         seconds = exercises[row].Time;
         for (let i = 0; i < exerciseId; i++) {
@@ -203,14 +205,18 @@
         }
         document.getElementById("btnStart").textContent = "Resume";
         pause();
-        mode = "goto";
+        mode = modes.Goto;
         updateExerciseDisplay();
         updateTableDisplay();
     }
 
+    var log = (entry) => {
+        console.log((new Date().toLocaleTimeString()) + " " + entry);
+    }
+    
     var pause = () => {
-        console.log("pause");
-        mode = "pause";
+        log("pause");
+        mode = modes.Pause;
         stopTimer();
         enableButton("btnStart");
         enableButton("btnReset");
@@ -218,6 +224,7 @@
     }
 
     var playAudio = (sound) => {
+        log("playAudio:" + sound)
         if (sound == audioTypes.EndExercise && audioEnabled.EndExercise == true)
         {
             audio.EndExercise.play();
@@ -225,7 +232,7 @@
     }
 
     var reset = () => {
-        console.log("reset");
+        log("reset");
         mode = null;
         document.getElementById("btnStart").textContent = "Start";
         enableButton("btnStart");
@@ -235,7 +242,7 @@
     }
 
     var resetDisplay = () => {
-        console.log("resetDisplay");
+        log("resetDisplay");
         document.getElementById("spanExercise").textContent = "Workout Time";
         document.getElementById("spanTimer").textContent = "...";
         for (let i = 0; i < exercises.length - 2; i++)
@@ -245,17 +252,17 @@
     }
 
     var start = () => {
-       console.log("start");
+       log("start");
         if (mode == null) {
             row = 0;
             seconds = exercises[row].Time;
             document.getElementById("btnStart").textContent = "Resume";
             countdown();
         }
-        else if (mode == "goto") {
+        else if (mode == modes.Goto) {
             countdown();
         }
-        mode = "play";
+        mode = modes.Play;
         enableButton("btnPause");
         disableButton("btnReset");
         disableButton("btnStart");
@@ -264,17 +271,17 @@
     }
 
     var startTimer = () => {
-        console.log("startTimer");
+        log("startTimer");
         timer = setInterval(countdown, 1000);
     }
 
     var stopTimer = () => {
-        console.log("stopTimer");
+        log("stopTimer");
         clearInterval(timer);
     }
 
     var transition = () => {
-        console.log("transition");
+        log("transition");
         updateExerciseDisplay();
         row++;
         seconds = exercises[row].Time;
@@ -287,20 +294,19 @@
             setTimeout(startTimer, (@Model.TransitionTime) * 1000);
         }
         else if (@Model.TransitionTime > 0) {
-            updateExerciseDisplay();
             startTimer();
         }
         playAudio(audioTypes.EndExercise);
     }
 
     var updateExerciseDisplay = () => {
-        console.log("updateExerciseDisplay");
+        log("updateExerciseDisplay");
         document.getElementById("spanExercise").textContent = exercises[row].Name;
         document.getElementById("spanTimer").textContent = seconds;
     }
 
     var updateTableDisplay = () => {
-        console.log("updateTableDisplay");
+        log("updateTableDisplay");
         if (row > 0 && row < exercises.length - 1) {
             document.getElementById("row" + (row - 1)).className = "table-primary";
         }
