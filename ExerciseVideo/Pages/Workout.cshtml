@@ -70,16 +70,53 @@
 
 <script type="text/javascript"> 
     
+    const audioTypes = {
+        EndExercise: "endExercise"
+    }
+
+    const sounds = {
+        AudioEndExercise: 'audioEndExercise'
+    }
+
+    const soundFilepaths = {
+        AudioEndExercise: 'audio/bell.mp3'
+    }
+
+
+
+    //var audioEndExercise;
+    var audio = {
+        EndExercise: null
+    }
+    var audioEnabled = {
+        EndExercise: null
+    };
     var exercises = new Array();
     var mode;
     var row;
     var seconds;
     var timer;
 
-    window.onload = buildExerciseArray;
+    window.onload = setup;
 
-    function buildExerciseArray() {
+    function setup() {
+        console.log("setup");
+        buildExerciseArray();
+        buildAudio();
+        
+    }
 
+    var buildAudio = () => {
+        console.log("buildAudio");
+        audioEnabled.EndExercise = @Model.AudioEndExercise.ToString().ToLower();
+        if (audioEnabled.EndExercise == true) {
+            audio.EndExercise = new Audio(soundFilepaths.AudioEndExercise);
+        }
+    }
+
+    var buildExerciseArray = () => {
+
+        console.log("buildExerciseArray");
         @if (Model.Exercises != null)
         {
             @:exercises.push({ Name: "Get Ready...", Time: 3 });
@@ -180,6 +217,13 @@
         disableButton("btnPause");
     }
 
+    var playAudio = (sound) => {
+        if (sound == audioTypes.EndExercise && audioEnabled.EndExercise == true)
+        {
+            audio.EndExercise.play();
+        }
+    }
+
     var reset = () => {
         console.log("reset");
         mode = null;
@@ -246,6 +290,7 @@
             updateExerciseDisplay();
             startTimer();
         }
+        playAudio(audioTypes.EndExercise);
     }
 
     var updateExerciseDisplay = () => {

@@ -7,6 +7,7 @@ namespace ExerciseVideo.Pages
 {
     public class WorkoutModel : PageModel
     {
+        public bool AudioEndExercise;
         public Exercise[]? Exercises;
         public int TransitionTime;
         public void OnGet()
@@ -34,6 +35,7 @@ namespace ExerciseVideo.Pages
             //    new Exercise() {Name = "Jumping Jacks", Time = 30, Order = 11}
             //};
 
+            AudioEndExercise = true;
             TransitionTime = 1;
         }
     }
