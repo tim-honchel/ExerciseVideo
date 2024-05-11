@@ -90,7 +90,8 @@
         EndExercise: null
     }
     var audioEnabled = {
-        EndExercise: null
+        EndExercise: null,
+        SpeakExercise: null
     };
     var exercises = new Array();
     var mode;
@@ -101,7 +102,6 @@
     window.onload = setup;
 
     function setup() {
-        //console.log("setup");
         log("setup");
         buildExerciseArray();
         buildAudio();
@@ -114,6 +114,7 @@
         if (audioEnabled.EndExercise == true) {
             audio.EndExercise = new Audio(soundFilepaths.AudioEndExercise);
         }
+        audioEnabled.SpeakExercise = @Model.AudioSpeakExercise.ToString().ToLower();
     }
 
     var buildExerciseArray = () => {
@@ -224,9 +225,8 @@
     }
 
     var playAudio = (sound) => {
-        log("playAudio:" + sound)
-        if (sound == audioTypes.EndExercise && audioEnabled.EndExercise == true)
-        {
+        log("playAudio:" + sound);
+        if (sound == audioTypes.EndExercise && audioEnabled.EndExercise == true) {
             audio.EndExercise.play();
         }
     }
@@ -245,10 +245,17 @@
         log("resetDisplay");
         document.getElementById("spanExercise").textContent = "Workout Time";
         document.getElementById("spanTimer").textContent = "...";
-        for (let i = 0; i < exercises.length - 2; i++)
-            {
+        for (let i = 0; i < exercises.length - 2; i++) {
                 document.getElementById("row" + i).className = "";
             }
+    }
+
+    var speakExercise = () => {
+        log("speak: " + exercises[row].Name);
+        if (audioEnabled.SpeakExercise == true) {
+            var utterance = new SpeechSynthesisUtterance(exercises[row].Name);
+            speechSynthesis.speak(utterance);
+        }
     }
 
     var start = () => {
@@ -291,12 +298,17 @@
             setTimeout(flashTemporaryTitle, @Model.TransitionTime * 0.5 * 1000 + 1000);
             setTimeout(flashTemporaryTitle, @Model.TransitionTime * 0.75 * 1000 + 1000);
             setTimeout(flashTemporaryTitle, @Model.TransitionTime * 1000 + 1000);
+            setTimeout(speakExercise, @Model.TransitionTime * 0.25 * 1000 + 1000);
             setTimeout(startTimer, (@Model.TransitionTime) * 1000);
         }
         else if (@Model.TransitionTime > 0) {
             startTimer();
         }
+        else {
+            speakExcersise();
+        }
         playAudio(audioTypes.EndExercise);
+        
     }
 
     var updateExerciseDisplay = () => {
