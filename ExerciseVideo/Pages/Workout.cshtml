@@ -95,11 +95,13 @@
         SecondTick: null,
         SpeakExercise: null
     };
+    var dots;
     var exercises = new Array();
     var mode;
     var row;
     var seconds;
     var timer;
+    var timerDots;
 
     window.onload = setup;
 
@@ -107,7 +109,7 @@
         log("setup");
         buildExerciseArray();
         buildAudio();
-        
+        dots = 0;
     }
 
     var buildAudio = () => {
@@ -150,17 +152,11 @@
     var countdown = () => {
         log("countdown:" + row + "|" + seconds);
         updateExerciseDisplay();
-        if (seconds == 0 && row < (exercises.length - 1)) {
+        if (seconds == 0) {
             if (@Model.TransitionTime > 0) {
                 stopTimer();
             }
             transition();
-        }
-        else if (seconds == 0 && row >= (exercises.length - 1)) {
-            mode = modes.Finished;
-            stopTimer();
-            enableButton("btnReset");
-            disableButton("btnPause");
         }
         else {
             seconds--;
@@ -182,6 +178,15 @@
         document.getElementById(buttonId).className = "btn-primary";
     }
 
+    var finish = () => {
+        log("finish");
+        mode = modes.Finished;
+        stopTimer();
+        updateExerciseDisplay();
+        enableButton("btnReset");
+        disableButton("btnPause");
+    }
+
     var flashEmptyTitle = () => {
         log("flashEmptyTitle");
         document.getElementById("spanExercise").style.color = "white";
@@ -189,22 +194,21 @@
     }
 
     var flashTemporaryTitle = () => {
-        var dots = (document.getElementById("spanTimer").textContent.split('.').length - 1) / 2
         log("flashTemporaryTitle:" + dots);
-        if (dots == 0) {
+        if (dots == 3) {
             updateTableDisplay();
             document.getElementById("spanExercise").textContent = exercises[row].Name;
             document.getElementById("spanTimer").textContent = "..." + seconds + "...";
             document.getElementById("spanExercise").style.color = "black";
             document.getElementById("spanTimer").style.color = "black";
         }
-        else if (dots == 3) {
+        else if (dots == 2) {
             document.getElementById("spanTimer").textContent = ".." + seconds + "..";
         }
-        else if (dots == 2) {
-            document.getElementById("spanTimer").textContent = "." + seconds + ".";
-        }
         else if (dots == 1) {
+            document.getElementById("spanTimer").textContent = "." + seconds + "."; seconds;
+        }
+        else if (dots == 0) {
             document.getElementById("spanTimer").textContent = seconds;
         }
     }
@@ -213,6 +217,7 @@
         log("gotoExercise:" + exerciseId);
         row = (exerciseId + 1);
         seconds = exercises[row].Time;
+        dots = 0;
         for (let i = 0; i < exerciseId; i++) {
             document.getElementById("row" + i).className = "table-secondary";
         }
@@ -297,12 +302,18 @@
 
     var startTimer = () => {
         log("startTimer");
-        timer = setInterval(countdown, 1000);
+        if (dots == 0) {
+            timer = setInterval(countdown, 1000);
+        }
+        else {
+            timerDots = setInterval(transitionIncrement, @Model.TransitionTime * 0.25 * 1000);
+        }
     }
 
     var stopTimer = () => {
         log("stopTimer");
         clearInterval(timer);
+        clearInterval(timerDots);
     }
 
     var transition = () => {
@@ -310,23 +321,43 @@
         updateExerciseDisplay();
         row++;
         seconds = exercises[row].Time;
-        if (@Model.TransitionTime > 0 && row < exercises.length - 1) {
-            setTimeout(flashEmptyTitle, 1000);
-            setTimeout(flashTemporaryTitle, @Model.TransitionTime * 0.25 * 1000 + 1000);
-            setTimeout(flashTemporaryTitle, @Model.TransitionTime * 0.5 * 1000 + 1000);
-            setTimeout(flashTemporaryTitle, @Model.TransitionTime * 0.75 * 1000 + 1000);
-            setTimeout(flashTemporaryTitle, @Model.TransitionTime * 1000 + 1000);
-            setTimeout(speakExercise, @Model.TransitionTime * 0.25 * 1000 + 1000);
-            setTimeout(startTimer, (@Model.TransitionTime) * 1000);
+        if (row >= exercises.length - 1) {
+            finish();
         }
         else if (@Model.TransitionTime > 0) {
-            startTimer();
+            timerDots = setTimeout(transitionStart, 1000);
         }
         else {
             speakExcersise();
         }
         playAudio(audioTypes.EndExercise);
         
+    }
+
+    var transitionIncrement = () =>
+    {
+        log("transitionIncrement:" + dots);
+        if (dots == 3) {
+            speakExercise();
+        }
+        if (dots >= 0) {
+            flashTemporaryTitle();
+        }
+        if (dots == 0) {
+            startTimer();
+            clearInterval(timerDots);
+        }
+        if (dots > 0) {
+            dots--;
+        }
+    }
+
+    var transitionStart = () =>
+    {
+        log("transitionStart");
+        flashEmptyTitle();
+        timerDots = setInterval(transitionIncrement, @Model.TransitionTime * 0.25 * 1000);
+        dots = 3;
     }
 
     var updateExerciseDisplay = () => {
