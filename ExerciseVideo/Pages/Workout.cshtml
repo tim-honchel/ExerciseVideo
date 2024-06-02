@@ -93,7 +93,8 @@
     var audioEnabled = {
         EndExercise: null,
         SecondTick: null,
-        SpeakExercise: null
+        SpeakExercise: null,
+        SpeakGo: null
     };
     var dots;
     var exercises = new Array();
@@ -128,7 +129,7 @@
         }
 
         audioEnabled.SpeakExercise = @Model.AudioSpeakExercise.ToString().ToLower();
-    
+        audioEnabled.SpeakGo = @Model.AudioSpeakGo.ToString().ToLower(); 
     }
 
     var buildExerciseArray = () => {
@@ -152,6 +153,9 @@
     var countdown = () => {
         log("countdown:" + row + "|" + seconds);
         updateExerciseDisplay();
+        if (seconds == exercises[row].Time && row > 0) {
+            speakGo();
+        }
         if (seconds == 0) {
             if (@Model.TransitionTime > 0) {
                 stopTimer();
@@ -279,6 +283,15 @@
             var utterance = new SpeechSynthesisUtterance(exercises[row].Name);
             speechSynthesis.speak(utterance);
         }
+    }
+
+    var speakGo = () => {
+        log("speak:go");
+        if (audioEnabled.SpeakGo == true) {
+            var utterance = new SpeechSynthesisUtterance("Go!");
+            speechSynthesis.speak(utterance);
+        }
+
     }
 
     var start = () => {

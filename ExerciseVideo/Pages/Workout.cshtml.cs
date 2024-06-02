@@ -10,6 +10,7 @@ namespace ExerciseVideo.Pages
         public bool AudioEndExercise;
         public bool AudioSecondTick;
         public bool AudioSpeakExercise;
+        public bool AudioSpeakGo;
         public Exercise[]? Exercises;
         public int TransitionTime;
         public void OnGet()
@@ -40,6 +41,7 @@ namespace ExerciseVideo.Pages
             AudioEndExercise = true;
             AudioSecondTick = true;
             AudioSpeakExercise = true;
+            AudioSpeakGo = true;
             TransitionTime = 2;
         }
     }
