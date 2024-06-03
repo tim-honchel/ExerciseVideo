@@ -15,21 +15,28 @@
 
 <body class="body">
 
-    <p id="spanExercise" class="display-6 text-center">
-        Workout Time
-    </p>
+    <div class="position-absolute start-0 end-50 h-100 d-flex flex-column justify-content-center">
 
-    <p id="spanTimer" class="display-1 text-center">
-        ...
-    </p>
+            <p id="spanExercise" class="display-4 text-center">
+                Workout Time
+            </p>
 
-    <div class="d-flex justify-content-center">
-        <button id="btnStart" class="btn btn-primary" onclick="start()">Start</button>
-        <button id="btnPause" class="disabled" disabled="true" onclick="pause()">Pause</button>
-        <button id="btnReset" class="disabled" disabled="true" onclick="reset()">Reset</button>
+            <p id="spanTimer" class="display-1 text-center">
+                ...
+            </p>
+
+            <div class="d-flex justify-content-center">
+                <button id="btnStart" class="btn btn-primary btn-lg m-1" onclick="start()">Start</button>
+                <button id="btnPause" class="btn-lg disabled m-1" disabled="true" onclick="pause()">Pause</button>
+                <button id="btnReset" class="btn-lg disabled m-1" disabled="true" onclick="reset()">Reset</button>
+            </div>
+
     </div>
 
 
+
+
+    <div class="position-absolute top-0 bottom-0 start-50 end-0 overflow-scroll">
     @if (Model.Exercises != null)
     {
         <table class="table table=striped">
@@ -54,6 +61,7 @@
             </tbody>
         </table>
     }
+    </div>
 
     <br />
 
@@ -173,13 +181,13 @@
     var disableButton = (buttonId) => {
         log("disableButton:" + buttonId);
         document.getElementById(buttonId).disabled = true;
-        document.getElementById(buttonId).className = "disabled";
+        document.getElementById(buttonId).className = "disabled btn-lg m-1";
     }
 
     var enableButton = (buttonId) => {
         log("enableButton:" + buttonId);
         document.getElementById(buttonId).disabled = false;
-        document.getElementById(buttonId).className = "btn-primary";
+        document.getElementById(buttonId).className = "btn btn-primary btn-lg m-1";
     }
 
     var finish = () => {
