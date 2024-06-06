@@ -6,13 +6,11 @@ namespace ExerciseVideo.Pages
 {
     public class CreateWorkoutModel : PageModel
     {
+        public Workout NewWorkout { get; set; } = new Workout();
         public void OnGet()
         {
+
         }
 
-        public void OnPostSubmit(Workout workout)
-        {
-            // TODO
-        }
     }
 }
