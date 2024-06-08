@@ -65,7 +65,7 @@
         <br />
 
         <div>
-            <button onclick="clickNext()">Next</button>
+            <button onclick="next()">Next</button>
         </div>
 
     </div>
@@ -75,25 +75,33 @@
        <div>
            <h2>Step 2: Add Exercises</h2>
        </div>
-        
-        <div>
-            <label for="Name" class="control-label">Exercise name:</label>
-            <br />
-            <input id="txtExerciseName" type="text" name="Name" value="" />
-            <br />
-        </div>
+
+       <div>
+           <table>
+               <thead>
+                   <tr>
+                       <th>Exercise Name</th>
+                       <th>Duration in Seconds</th>
+                   </tr>
+               </thead>
+               <tbody id="tBody">
+               </tbody>
+               <tfoot>
+                   <tr>
+                       <td>
+                            <button onclick="addAnotherExercise()">Add Another</button>
+                       </td>
+                   </tr>
+               </tfoot>
+           </table>
+       </div>
+
+       <br />
+       <br />
 
         <div>
-            <label for="Time" class="control-label">Seconds:</label>
-            <br />
-            <input id="txtExerciseSeconds" type="number" name="Time" value="10" min="1" max="3600" step="1" />
-            <br />
-        </div>
-
-        <div>
-            <button onclick="clickBack()">Back</button>
-            <button onclick="clickAddAnotherExercise()">Add Another</button>
-            <button onclick="clickNext()">Next</button>
+            <button onclick="back()">Back</button>
+            <button onclick="next()">Next</button>
         </div>
 
     </div>
@@ -118,31 +126,49 @@
             log("setup");
             step = 1;
             numberOfExercises=0;
+            addAnotherExercise();
             updateDisplay();
         }
 
-        var clickAddAnotherExercise = () => {
-            log("clickAddAnotherExercise");
-            saveChanges();
+        var addAnotherExercise = () => {
+            log("addAnotherExercise");
+            numberOfExercises ++;
+            var tBody = document.getElementById("tBody");
+            var newRow = tBody.insertRow();
+            var nameCell = newRow.insertCell();
+            var secondsCell = newRow.insertCell();
+            
+            var nameInput = document.createElement("input");
+            nameInput.id = "txtExerciseName" + numberOfExercises;
+            nameCell.appendChild(nameInput);
+
+            var secondsInput = document.createElement("input");
+            secondsInput.id = "txtExerciseSeconds" + numberOfExercises;
+            secondsInput.type = "number";
+            secondsInput.value = "10";
+            secondsInput.min = "1";
+            secondsInput.max = "3600";
+            secondsInput.step = "1";
+            secondsCell.appendChild(secondsInput);
         }
 
-        var clickBack = () => {
-            log("clickBack");
+        var back = () => {
+            log("back");
+            saveChanges();
             step--;
             updateDisplay();
-        }
-
-        var clickNext = () => {
-            log("clickNext");
-            saveChanges();
-            step++;
-            updateDisplay();
-            
         }
 
         var log = (entry) => {
             var time = new Date();
             console.log(time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds() + "." + time.getMilliseconds() + " " + entry);
+        }
+
+        var next = () => {
+            log("next");
+            saveChanges();
+            step++;
+            updateDisplay();
         }
 
         var updateDisplay = () => {
@@ -178,17 +204,21 @@
                 log("workoutTitle: " + workoutTitle);
             }
             else if (step == 2) {
-                var exerciseName = document.getElementById("txtExerciseName").value;
-                var exerciseDuration = document.getElementById("txtExerciseSeconds").value;
-                exercises.push({Name:exerciseName, Time:exerciseDuration, Order:numberOfExercises});
-                log("name: " + exerciseName);
-                log("time: " + exerciseDuration);
-                log("order: " + numberOfExercises);
-                numberOfExercises ++;
-                document.getElementById("txtExerciseName").value = "";
-                document.getElementById("txtExerciseSeconds").value = "";
+                saveExercises();
             }
 
+        }
+
+        var saveExercises = () => {
+            log("saveExercises");
+            exercises.length = 0;
+            for (let i = 1; i <= numberOfExercises; i++)
+            {
+                var exerciseName = document.getElementById("txtExerciseName" + i).value;
+                var exerciseDuration = document.getElementById("txtExerciseSeconds" + i).value;
+                exercises.push({ Name: exerciseName, Time: exerciseDuration, Order: i });
+                log("name: " + exerciseName + ", seconds: " + exerciseDuration + ", order: " + i);
+            }
         }
 
     </script>
