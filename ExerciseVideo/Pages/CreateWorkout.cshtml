@@ -108,17 +108,17 @@
 
     <script type="text/javascript">
 
-        var step;
-
         var audioSpeakExercise;
         var audioSpeakGo;
         var audioSecondTick;
         var audioEndExercise;
+        var exercises = new Array();
         var transitionTime;
         var workoutTitle;
 
-        var exercises = new Array();
+        var dragId;
         var numberOfExercises;
+        var step;
 
         window.onload = setup;
 
@@ -129,14 +129,23 @@
             addAnotherExercise();
             updateDisplay();
         }
-
+        
         var addAnotherExercise = () => {
             log("addAnotherExercise");
             numberOfExercises ++;
             var tBody = document.getElementById("tBody");
             var newRow = tBody.insertRow();
+            newRow.draggable = true;
+            newRow.addEventListener('dragstart', dragStart)
+            newRow.addEventListener('dragenter', dragEnter)
+            newRow.addEventListener('dragover', dragOver);
+            newRow.addEventListener('dragleave', dragLeave);
+            newRow.addEventListener('drop', drop);
+            newRow.id = "tr" + numberOfExercises;
             var nameCell = newRow.insertCell();
+            nameCell.id = "tdName" + numberOfExercises;
             var secondsCell = newRow.insertCell();
+            secondsCell.id = "tdSeconds" + numberOfExercises;
             
             var nameInput = document.createElement("input");
             nameInput.id = "txtExerciseName" + numberOfExercises;
@@ -159,9 +168,49 @@
             updateDisplay();
         }
 
+
+        var dragEnter = (e) => {
+            console.log("dragEnter");
+            e.preventDefault();
+        }
+
+        var dragLeave = (e) => {
+            console.log("dragLeave");
+        }
+
+        var dragOver = (e) => {
+            e.preventDefault();
+        }
+
+        var dragStart = (e) => {
+            console.log("dragStart");
+            dragId = e.target.rowIndex;
+            console.log("dragId: " + dragId);
+        }
+
+        var drop = (e) => {
+            console.log("drop");
+
+            var targetId = e.target.id.replace(/\D/g, "");
+
+            console.log("target:" + targetId);
+            console.log("source:" + dragId);
+
+            if (dragId != targetId) {
+                moveExercise(dragId,targetId);
+            }
+        }
+
         var log = (entry) => {
             var time = new Date();
             console.log(time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds() + "." + time.getMilliseconds() + " " + entry);
+        }
+
+        var moveExercise = (sourceId, targetId) => {
+            console.log("moveExercise: " + sourceId + " to " + targetId);
+
+            // TODO
+
         }
 
         var next = () => {
