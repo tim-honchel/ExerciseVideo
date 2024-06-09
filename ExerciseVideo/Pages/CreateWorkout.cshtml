@@ -74,6 +74,7 @@
 
        <div>
            <h2>Step 2: Add Exercises</h2>
+           <p>Drag and drop rows to change the order</p>
        </div>
 
        <div>
@@ -209,8 +210,27 @@
         var moveExercise = (sourceId, targetId) => {
             console.log("moveExercise: " + sourceId + " to " + targetId);
 
-            // TODO
-
+            if (targetId > sourceId) {
+                var nameToReplace = document.getElementById("txtExerciseName" + sourceId).value;
+                var secondsToReplace = document.getElementById("txtExerciseSeconds" + sourceId).value;
+                for (let i = sourceId; i < targetId; i++) {
+                    document.getElementById("txtExerciseName" + i).value = document.getElementById("txtExerciseName" + (i+1)).value;
+                    document.getElementById("txtExerciseSeconds" + i).value = document.getElementById("txtExerciseSeconds" + (i + 1)).value;
+                }
+                document.getElementById("txtExerciseName" + targetId).value = nameToReplace;
+                document.getElementById("txtExerciseSeconds" + targetId).value = secondsToReplace;
+            }
+            else {
+                var nameToReplace = document.getElementById("txtExerciseName" + sourceId).value;
+                var secondsToReplace = document.getElementById("txtExerciseSeconds" + sourceId).value;
+                for (let i = sourceId; i > targetId; i--) {
+                    document.getElementById("txtExerciseName" + i).value = document.getElementById("txtExerciseName" + (i - 1)).value;
+                    document.getElementById("txtExerciseSeconds" + i).value = document.getElementById("txtExerciseSeconds" + (i - 1)).value;
+                }
+                document.getElementById("txtExerciseName" + targetId).value = nameToReplace;
+                document.getElementById("txtExerciseSeconds" + targetId).value = secondsToReplace;
+            }
+            
         }
 
         var next = () => {
