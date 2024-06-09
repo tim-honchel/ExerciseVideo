@@ -89,6 +89,14 @@
         Play: "play"
     }
 
+    const phases = {
+        BeforeStart: "beforeStart",
+        InExercise: "inExercise",
+        EndExercise: "endExercise",
+        InTransition: "inTransition",
+        AfterFinish: "afterFinish"
+    }
+
     const soundFilepaths = {
         AudioEndExercise: 'audio/bell.mp3',
         AudioSecondTick: 'audio/tick.mp3'
@@ -107,6 +115,7 @@
     var dots;
     var exercises = new Array();
     var mode;
+    var phase;
     var row;
     var seconds;
     var timerExercise;
@@ -119,6 +128,7 @@
         buildExerciseArray();
         buildAudio();
         dots = 0;
+        phase = phases.BeforeStart;
     }
 
     var buildAudio = () => {
@@ -163,6 +173,7 @@
         updateExerciseDisplay();
         if (seconds == exercises[row].Time && row > 0) {
             speakGo();
+            phase = phases.InExercise;
         }
         if (seconds == 0) {
             if (@Model.TransitionTime > 0) {
@@ -193,6 +204,7 @@
     var finish = () => {
         log("finish");
         mode = modes.Finished;
+        phase = phases.AfterFinish;
         stopTimers();
         updateExerciseDisplay();
         enableButton("btnReset");
@@ -211,8 +223,6 @@
             updateTableDisplay();
             document.getElementById("spanExercise").textContent = exercises[row].Name;
             document.getElementById("spanTimer").textContent = "..." + seconds + "...";
-            document.getElementById("spanExercise").style.color = "black";
-            document.getElementById("spanTimer").style.color = "black";
         }
         else if (dots == 2) {
             document.getElementById("spanTimer").textContent = ".." + seconds + "..";
@@ -223,6 +233,8 @@
         else if (dots == 0) {
             document.getElementById("spanTimer").textContent = seconds;
         }
+        document.getElementById("spanExercise").style.color = "black";
+        document.getElementById("spanTimer").style.color = "black";
     }
 
     var goToExercise = (exerciseId) => {
@@ -239,6 +251,7 @@
         document.getElementById("btnStart").textContent = "Resume";
         pause();
         mode = modes.Goto;
+        phase = phases.InExercise;
         updateExerciseDisplay();
         updateTableDisplay();
     }
@@ -249,7 +262,7 @@
     }
     
     var pause = () => {
-        log("pause");
+        log("pause: " + phase);
         mode = modes.Pause;
         stopTimers();
         enableButton("btnStart");
@@ -270,6 +283,7 @@
     var reset = () => {
         log("reset");
         mode = null;
+        phase = phases.BeforeStart;
         document.getElementById("btnStart").textContent = "Start";
         enableButton("btnStart");
         disableButton("btnPause");
@@ -281,6 +295,8 @@
         log("resetDisplay");
         document.getElementById("spanExercise").textContent = "Workout Time";
         document.getElementById("spanTimer").textContent = "...";
+        document.getElementById("spanExercise").style.color = "black";
+        document.getElementById("spanTimer").style.color = "black";
         for (let i = 0; i < exercises.length - 2; i++) {
                 document.getElementById("row" + i).className = "";
             }
@@ -304,32 +320,32 @@
     }
 
     var start = () => {
-       log("start");
+       log("start: " + phase);
         if (mode == null) {
             row = 0;
             seconds = exercises[row].Time;
             document.getElementById("btnStart").textContent = "Resume";
             countdown();
+            startTimerExercise();
         }
         else if (mode == modes.Goto) {
             countdown();
+            startTimerExercise();
+        }
+        else if (mode == modes.Pause && phase == phases.InTransition) {
+            timerExercise = setTimeout(startTimerExercise, @Model.TransitionTime * 1000 - 1000);
+            startTimerTransition();
+        }
+        else if (mode == modes.Pause && phase == phases.EndExercise) {
+            transitionStart();
+        }
+        else {
+            startTimerExercise();
         }
         mode = modes.Play;
         enableButton("btnPause");
         disableButton("btnReset");
         disableButton("btnStart");
-        startTimers();
-
-    }
-
-    var startTimers = () => {
-        log("startTimers");
-        if (dots == 0) {
-            startTimerExercise();
-        }
-        else {
-            startTimerTransition();
-        }
     }
 
     var startTimerExercise = () => {
@@ -370,10 +386,10 @@
             timerTransition = setTimeout(transitionStart, 1000);
         }
         else {
-            speakExcersise();
+            speakExcercise();
         }
         playAudio(audioTypes.EndExercise);
-        
+        phase = phases.EndExercise;
     }
 
     var transitionIncrement = () =>
@@ -396,10 +412,11 @@
     var transitionStart = () =>
     {
         log("transitionStart");
+        phase = phases.InTransition;
         flashEmptyTitle();
+        dots = 3;
         startTimerTransition();
         timerExercise = setTimeout(startTimerExercise, @Model.TransitionTime * 1000 - 1000);
-        dots = 3;
     }
 
     var updateExerciseDisplay = () => {

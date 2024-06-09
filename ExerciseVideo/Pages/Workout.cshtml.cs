@@ -19,7 +19,7 @@ namespace ExerciseVideo.Pages
             {
                 Exercises = new List<Exercise>()
                 {
-                    new Exercise() {Name = "Arm Swings", Time = 20, Order = 0},
+                    new Exercise() {Name = "Arm Swings", Time = 10, Order = 0},
                     new Exercise() {Name = "Forward Arm Circles", Time = 10, Order = 1},
                     new Exercise() {Name = "Reverse Arm Circles", Time = 10, Order = 2},
                     new Exercise() {Name = "Right Leg Circles", Time = 10, Order = 3},
