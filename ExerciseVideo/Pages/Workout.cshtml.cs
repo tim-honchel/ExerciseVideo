@@ -1,10 +1,12 @@
 using ExerciseVideo.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Xml.Linq;
 
 namespace ExerciseVideo.Pages
 {
+    [Authorize]
     public class WorkoutModel : PageModel
     {
         public bool AudioEndExercise;

@@ -1,0 +1,68 @@
+﻿@page "/Profile"
+@inject TokenProvider tokenProvider
+@attribute [Authorize]
+
+<PageTitle>Profile</PageTitle>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="row">
+            <h2>Profile</h2>
+            <div class="col-md-2">
+                <img src="@Picture" alt="" class="img-rounded img-responsive" />
+            </div>
+        </div>
+        <div class="row pt-3"
+            <h4>Username</h4>
+            <p>@Username</p>
+            <h4>Email Address</h4>
+            <p>@EmailAddress</p>
+            <h4>ID</h4>
+            <p>@ShortId</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    private string Username = "";
+    private string EmailAddress = "";
+    private string Picture = "";
+    private string Id = "";
+    private string ShortId = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthenticationStateTask;
+
+        Username = state.User.Identity?.Name ?? "N/A";
+
+        EmailAddress = state.User.Claims
+            .Where(c => c.Type.Equals(System.Security.Claims.ClaimTypes.Email))
+            .Select(c => c.Value)
+            .FirstOrDefault() ?? "N/A";
+
+        Picture = state.User.Claims
+            .Where(c => c.Type.Equals("picture"))
+            .Select(c => c.Value)
+            .FirstOrDefault() ?? string.Empty;
+
+        Id = state.User.Claims
+            .Where(c => c.Type.Equals(System.Security.Claims.ClaimTypes.NameIdentifier))
+            .Select(c => c.Value)
+            .FirstOrDefault() ?? string.Empty;
+
+        if (Id.Length > 7)
+        {
+            ShortId = Id.Substring(Id.Length - 7);
+        }
+        else
+        {
+            ShortId = Id;
+        }
+
+        await base.OnInitializedAsync();
+    }
+}
+
