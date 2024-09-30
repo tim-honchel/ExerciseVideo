@@ -17,7 +17,7 @@ namespace ExerciseVideo.Pages
         public int TransitionTime;
         public void OnGet()
         {
-            Workout workout = new Workout()
+            WorkoutDto workout = new WorkoutDto()
             {
                 Exercises = new List<Exercise>()
                 {

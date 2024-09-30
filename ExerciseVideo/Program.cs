@@ -1,4 +1,7 @@
 using Auth0.AspNetCore.Authentication;
+using ExerciseVideo.Data;
+using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +16,8 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<TokenProvider>();
+builder.Services.AddDbContext<Context>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionStrings:Localhost")));
 
 var app = builder.Build();
 

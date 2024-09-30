@@ -8,7 +8,7 @@ namespace ExerciseVideo.Pages
     [Authorize]
     public class CreateWorkoutModel : PageModel
     {
-        public Workout NewWorkout { get; set; } = new Workout();
+        public WorkoutDto NewWorkout { get; set; } = new WorkoutDto();
         public void OnGet()
         {
 
