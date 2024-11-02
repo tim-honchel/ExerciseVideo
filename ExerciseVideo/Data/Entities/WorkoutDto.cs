@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace ExerciseVideo.Data
+namespace ExerciseVideo.Data.Entities
 {
     public class WorkoutDto
     {

@@ -1,5 +1,7 @@
 using Auth0.AspNetCore.Authentication;
 using ExerciseVideo.Data;
+using ExerciseVideo.Data.Repositories;
+using ExerciseVideo.Services;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -15,9 +17,13 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddAntiforgery(o => o.HeaderName = "XSRF-TOKEN"); ;
 builder.Services.AddScoped<TokenProvider>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<WorkoutRepository>();
 builder.Services.AddDbContext<Context>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionStrings:Localhost")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Localhost")));
 
 var app = builder.Build();
 

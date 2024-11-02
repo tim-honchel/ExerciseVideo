@@ -1,4 +1,4 @@
-﻿namespace ExerciseVideo.Data
+﻿namespace ExerciseVideo.Data.Entities
 {
     public class Exercise
     {

@@ -1,8 +1,9 @@
 ﻿@page
 @model ExerciseVideo.Pages.CreateWorkoutModel
 @addTagHelper*, Microsoft.AspNetCore.Mvc.TagHelpers
+@Html.AntiForgeryToken()
 @using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.AspNetCore.Components.Web;
+@using Microsoft.AspNetCore.Components.Web
 
 <!DOCTYPE html>
 <html lang="en">
@@ -102,10 +103,23 @@
 
         <div>
             <button onclick="back()">Back</button>
-            <button onclick="next()">Next</button>
+            <button onclick="submit()">Submit</button>
         </div>
 
     </div>
+
+    <div id="divWorkoutCreated" style="display:none">
+
+        <div>
+            <h2>Success!</h2>
+            <p id="pMessage"></p>
+        </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
 
     <script type="text/javascript">
 
@@ -164,7 +178,7 @@
 
         var back = () => {
             log("back");
-            saveChanges();
+            saveExercises();
             step--;
             updateDisplay();
         }
@@ -240,53 +254,94 @@
             updateDisplay();
         }
 
+        var notifyError = () => {
+            alert('There was a problem adding your exercise. Please try again'); 
+        } 
+
+        var saveChanges = () => {
+            log("saveChanges");            
+            audioSpeakExercise = document.getElementById("chkAudioSpeakExercise").checked;
+            audioSpeakGo = document.getElementById("chkAudioSpeakGo").checked;
+            audioSecondTick = document.getElementById("chkAudioSecondTick").checked;
+            audioEndExercise = document.getElementById("chkAudioEndExercise").checked;
+            transitionTime =  document.getElementById("txtTransitionTime").value;
+            workoutTitle = document.getElementById("txtTitle").value;
+            log("audioSpeakExercise: " + audioSpeakExercise);
+            log("audioSpeakGo: " + audioSpeakGo);
+            log("audioSecondTick: " + audioSecondTick);
+            log("audioEndExercise: " + audioEndExercise);
+            log("transitionTime: " + transitionTime);
+            log("workoutTitle: " + workoutTitle);
+        }
+
+        var saveExercises = () => {
+            console.log("saveExercises");
+            exercises.length = 0;
+            for (let i = 1; i <= numberOfExercises; i++) {
+                var exerciseName = document.getElementById("txtExerciseName" + i).value;
+                var exerciseDuration = document.getElementById("txtExerciseSeconds" + i).value;
+                exercises.push({ Name: exerciseName, Time: exerciseDuration, Order: i });
+                log("name: " + exerciseName + ", seconds: " + exerciseDuration + ", order: " + i);
+            }
+        }
+
+        var submit = () => {
+            log("submit");
+            saveExercises();
+
+            var newWorkout = {
+                'Title': workoutTitle,
+                'Exercises': exercises,
+                'AudioEndExercise': audioEndExercise,
+                'AudioSecondTick': audioSecondTick,
+                'AudioSpeakExercise': audioSpeakExercise,
+                'AudioSpeakGo': audioSpeakGo,
+                'TransitionTime': transitionTime
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: '/CreateWorkout?handler=NewWorkout',
+                data: newWorkout,
+                dataType: 'json',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("XSRF-TOKEN",
+                        $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
+                success: function (result) {
+                    console.log("AJAX: " + JSON.stringify(result)); 
+                    if (result.success) {
+                        step++;
+                        updateDisplay();
+                    }
+                    else { 
+                        notifyError(); 
+                    }
+                },
+                error: function (xhr, status, error) { 
+                    console.log("AJAX: " + JSON.stringify(xhr)); 
+                    notifyError(); 
+                }
+            });
+        }
+
         var updateDisplay = () => {
             log("updateDisplay: step " + step)
             if (step == 1) {
                 document.getElementById("divChooseOptions").style.display = "block";
                 document.getElementById("divChooseExercises").style.display = "none";
+                document.getElementById("divWorkoutCreated").style.display = "none";
             }
             else if (step == 2) {
                 document.getElementById("divChooseOptions").style.display = "none";
                 document.getElementById("divChooseExercises").style.display = "block";
+                document.getElementById("divWorkoutCreated").style.display = "none";
             }
             else if (step == 3) {
                 document.getElementById("divChooseOptions").style.display = "none";
                 document.getElementById("divChooseExercises").style.display = "none";
-            }
-        }
-
-        var saveChanges = () => {
-            log("saveChanges");
-            if (step == 1) {              
-                audioSpeakExercise = document.getElementById("chkAudioSpeakExercise").checked;
-                audioSpeakGo = document.getElementById("chkAudioSpeakGo").checked;
-                audioSecondTick = document.getElementById("chkAudioSecondTick").checked;
-                audioEndExercise = document.getElementById("chkAudioEndExercise").checked;
-                transitionTime =  document.getElementById("txtTransitionTime").value;
-                workoutTitle = document.getElementById("txtTitle").value;
-                log("audioSpeakExercise: " + audioSpeakExercise);
-                log("audioSpeakGo: " + audioSpeakGo);
-                log("audioSecondTick: " + audioSecondTick);
-                log("audioEndExercise: " + audioEndExercise);
-                log("transitionTime: " + transitionTime);
-                log("workoutTitle: " + workoutTitle);
-            }
-            else if (step == 2) {
-                saveExercises();
-            }
-
-        }
-
-        var saveExercises = () => {
-            log("saveExercises");
-            exercises.length = 0;
-            for (let i = 1; i <= numberOfExercises; i++)
-            {
-                var exerciseName = document.getElementById("txtExerciseName" + i).value;
-                var exerciseDuration = document.getElementById("txtExerciseSeconds" + i).value;
-                exercises.push({ Name: exerciseName, Time: exerciseDuration, Order: i });
-                log("name: " + exerciseName + ", seconds: " + exerciseDuration + ", order: " + i);
+                document.getElementById("pMessage").textContent = "Your new workout, '" + workoutTitle + "', was added. You can access it from the side menu.";
+                document.getElementById("divWorkoutCreated").style.display = "block";
             }
         }
 
