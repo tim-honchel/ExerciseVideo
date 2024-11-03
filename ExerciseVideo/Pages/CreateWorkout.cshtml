@@ -280,8 +280,8 @@
             for (let i = 1; i <= numberOfExercises; i++) {
                 var exerciseName = document.getElementById("txtExerciseName" + i).value;
                 var exerciseDuration = document.getElementById("txtExerciseSeconds" + i).value;
-                exercises.push({ Name: exerciseName, Time: exerciseDuration, Order: i });
-                log("name: " + exerciseName + ", seconds: " + exerciseDuration + ", order: " + i);
+                exercises.push({ Name: exerciseName, Time: exerciseDuration, Order: i-1 });
+                log("name: " + exerciseName + ", seconds: " + exerciseDuration + ", order: " + i-1);
             }
         }
 

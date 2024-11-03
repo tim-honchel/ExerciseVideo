@@ -1,6 +1,6 @@
 ﻿@inject Context _context;
 @inject UserService _userService;
-@inject WorkoutRepository _repository;
+@inject WorkoutService _workoutService;
 @using ExerciseVideo.Data;
 @using ExerciseVideo.Data.Entities;
 @using ExerciseVideo.Data.Repositories;
@@ -84,10 +84,7 @@
 
             var user = await _userService.GetCurrentUser(state);
             userName = state.User.Identity.Name;
-            workouts = _repository.GetWorkoutsByUserId(user.Id);
-            
-
-
+            workouts = _workoutService.GetWorkoutsByUserId(user.Id);
         }
 
 
