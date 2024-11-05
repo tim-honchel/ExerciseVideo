@@ -1,6 +1,7 @@
 ﻿using ExerciseVideo.Data.Entities;
 using ExerciseVideo.Data.Repositories;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace ExerciseVideo.Services
 {
@@ -75,6 +76,45 @@ namespace ExerciseVideo.Services
         public Workout? GetWorkoutById(int workoutId)
         {
             return Repository.GetWorkoutById(workoutId);
+        }
+
+        public void UpdateWorkout(Workout workout)
+        {
+            Repository.UpdateWorkout(workout);
+        }
+
+        public string ValidateWorkout(WorkoutDto newWorkout, bool isNew = true)
+        {
+            string validationErrorMessage = string.Empty;
+
+            if (newWorkout == null)
+            {
+                validationErrorMessage = "Workout data is empty or was not received.";
+                return validationErrorMessage;
+            }
+
+            if (isNew && newWorkout.Id != 0)
+            {
+                validationErrorMessage += "ID cannot contain a value.";
+            }
+            if (string.IsNullOrEmpty(newWorkout.Title))
+            {
+                validationErrorMessage += "The workout title is blank.";
+            }
+            if (!Regex.Match(newWorkout.Title, "^[a-zA-Z0-9-_'.,;?!#$%&* ]*$").Success)
+            {
+                validationErrorMessage += "The workout title is invalid.";
+            }
+            if (newWorkout.Exercises == null || newWorkout.Exercises.Count == 0)
+            {
+                validationErrorMessage += "The workout does not contain any exercises.";
+            }
+            if (newWorkout.TransitionTime < 0 || newWorkout.TransitionTime > 10)
+            {
+                validationErrorMessage += "Transition time value is invalid.";
+            }
+
+            return validationErrorMessage;
         }
     }
 }

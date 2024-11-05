@@ -1,0 +1,339 @@
+﻿@page
+@model ExerciseVideo.Pages.EditWorkoutModel
+@Html.AntiForgeryToken()
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Create a New Workout</title>
+    <link href="~/css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
+</head>
+
+<body class="body">
+
+    <h1 class="fs-1">Edit Workout:</h1>
+    <br />
+
+    <div id="divEditWorkout">
+
+        <h2>Options</h2>
+
+        <div>
+            <label for="Title" class="control-label">Workout title:</label>
+            <br />
+            <input id="txtTitle" type="text" name="Title" value="@Model.Title" />
+            <br />
+        </div>
+
+        <br />
+
+        <div>
+            <label class="control-label">Play audio for:</label>
+            <br />
+            <input id="chkAudioSpeakExercise" type="checkbox" name="AudioSpeakExercise" checked="@Model.AudioSpeakExercise" />
+            <label for="AudioSpeakExercise">Name of exercise</label>
+            <br />
+            <input id="chkAudioSpeakGo" type="checkbox" name="AudioSpeakGo" checked="@Model.AudioSpeakGo" />
+            <label for="AudioSpeakGo">Start of exercise</label>
+            <br />
+            <input id="chkAudioSecondTick" type="checkbox" name="AudioSecondTick" checked="@Model.AudioSecondTick" />
+            <label for="AudioSecondTick">Tick for each second</label>
+            <br />
+            <input id="chkAudioEndExercise" type="checkbox" name="AudioEndExercise" checked="@Model.AudioEndExercise" />
+            <label for="AudioEndExercise">End of exercise</label>
+            <br />
+        </div>
+
+        <br />
+
+        <div>
+            <label for="TransitionTime" class="control-label">Seconds for transition between exercises:</label>
+            <br />
+            <input id="txtTransitionTime" type="number" name="TransitionTime" value="@Model.TransitionTime" min="0" max="10" step="1" />
+            <br />
+        </div>
+
+        <br />
+
+        <div>
+            <h2>Exercises</h2>
+            <p>Drag and drop rows to change the order</p>
+        </div>
+
+        <div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Exercise Name</th>
+                        <th>Duration in Seconds</th>
+                    </tr>
+                </thead>
+                <tbody id="tBody">
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>
+                            <button onclick="addAnotherExercise()">Add Another</button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <br />
+        <br />
+
+        <div>
+            <button onclick="submit()">Submit</button>
+        </div>
+
+    </div>
+
+    <div id="divWorkoutUpdated" style="display:none">
+
+        <div>
+            <h2>Success!</h2>
+            <p id="pMessage"></p>
+        </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+
+        var audioSpeakExercise;
+        var audioSpeakGo;
+        var audioSecondTick;
+        var audioEndExercise;
+        var exercises = new Array();
+        var transitionTime;
+        var workoutId = @Model.WorkoutId;
+        var workoutTitle;
+
+        var dragId;
+        var numberOfExercises;
+
+        window.onload = setup;
+
+        function setup() {
+            log("setup");
+            numberOfExercises = 0;
+            buildExerciseArray();
+            addOriginalExercises();
+        }
+
+        var addAnotherExercise = (name = "", seconds = 10) => {
+            log("addAnotherExercise");
+            numberOfExercises++;
+            var tBody = document.getElementById("tBody");
+            var newRow = tBody.insertRow();
+            newRow.draggable = true;
+            newRow.addEventListener('dragstart', dragStart)
+            newRow.addEventListener('dragenter', dragEnter)
+            newRow.addEventListener('dragover', dragOver);
+            newRow.addEventListener('dragleave', dragLeave);
+            newRow.addEventListener('drop', drop);
+            newRow.id = "tr" + numberOfExercises;
+            var nameCell = newRow.insertCell();
+            nameCell.id = "tdName" + numberOfExercises;
+            var secondsCell = newRow.insertCell();
+            secondsCell.id = "tdSeconds" + numberOfExercises;
+
+            var nameInput = document.createElement("input");
+            nameInput.id = "txtExerciseName" + numberOfExercises;
+            nameInput.value = name;
+
+
+            var secondsInput = document.createElement("input");
+            secondsInput.id = "txtExerciseSeconds" + numberOfExercises;
+            secondsInput.type = "number";
+            secondsInput.value = seconds;
+            secondsInput.min = "1";
+            secondsInput.max = "3600";
+            secondsInput.step = "1";
+
+            nameCell.appendChild(nameInput);
+            secondsCell.appendChild(secondsInput);
+        }
+
+        var addOriginalExercises = () => {
+            log("addOriginalExercises");
+            for (let i = 0; i < exercises.length; i++) {
+                addAnotherExercise(exercises[i].Name, exercises[i.Time]);
+            }
+        }
+
+        var buildExerciseArray = () => {
+
+            log("buildExerciseArray");
+            @if (Model.Exercises != null)
+            {
+                foreach (var exercise in Model.Exercises)
+                {
+                    @:exercises.push({ Name: "@exercise.Name", Time: "@exercise.Time" });
+                }
+            }
+        }
+
+        var dragEnter = (e) => {
+            console.log("dragEnter");
+            e.preventDefault();
+        }
+
+        var dragLeave = (e) => {
+            console.log("dragLeave");
+        }
+
+        var dragOver = (e) => {
+            e.preventDefault();
+        }
+
+        var dragStart = (e) => {
+            console.log("dragStart");
+            dragId = e.target.rowIndex;
+            console.log("dragId: " + dragId);
+        }
+
+        var drop = (e) => {
+            console.log("drop");
+
+            var targetId = e.target.id.replace(/\D/g, "");
+
+            console.log("target:" + targetId);
+            console.log("source:" + dragId);
+
+            if (dragId != targetId) {
+                moveExercise(dragId, targetId);
+            }
+        }
+
+        var log = (entry) => {
+            var time = new Date();
+            console.log(time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds() + "." + time.getMilliseconds() + " " + entry);
+        }
+
+        var moveExercise = (sourceId, targetId) => {
+            console.log("moveExercise: " + sourceId + " to " + targetId);
+
+            if (targetId > sourceId) {
+                var nameToReplace = document.getElementById("txtExerciseName" + sourceId).value;
+                var secondsToReplace = document.getElementById("txtExerciseSeconds" + sourceId).value;
+                for (let i = sourceId; i < targetId; i++) {
+                    document.getElementById("txtExerciseName" + i).value = document.getElementById("txtExerciseName" + (i + 1)).value;
+                    document.getElementById("txtExerciseSeconds" + i).value = document.getElementById("txtExerciseSeconds" + (i + 1)).value;
+                }
+                document.getElementById("txtExerciseName" + targetId).value = nameToReplace;
+                document.getElementById("txtExerciseSeconds" + targetId).value = secondsToReplace;
+            }
+            else {
+                var nameToReplace = document.getElementById("txtExerciseName" + sourceId).value;
+                var secondsToReplace = document.getElementById("txtExerciseSeconds" + sourceId).value;
+                for (let i = sourceId; i > targetId; i--) {
+                    document.getElementById("txtExerciseName" + i).value = document.getElementById("txtExerciseName" + (i - 1)).value;
+                    document.getElementById("txtExerciseSeconds" + i).value = document.getElementById("txtExerciseSeconds" + (i - 1)).value;
+                }
+                document.getElementById("txtExerciseName" + targetId).value = nameToReplace;
+                document.getElementById("txtExerciseSeconds" + targetId).value = secondsToReplace;
+            }
+
+        }
+
+        var notifyError = () => {
+            alert('There was a problem updating your exercise. Please try again');
+        }
+
+        var saveExercises = () => {
+            console.log("saveExercises");
+            console.log(numberOfExercises);
+            exercises.length = 0;
+            for (let i = 1; i <= numberOfExercises; i++) {
+                console.log(i);
+                var exerciseName = document.getElementById("txtExerciseName" + i).value;
+                var exerciseDuration = document.getElementById("txtExerciseSeconds" + i).value;
+                exercises.push({ Name: exerciseName, Time: exerciseDuration, Order: i - 1 });
+                log("name: " + exerciseName + ", seconds: " + exerciseDuration + ", order: " + i - 1);
+            }
+        }
+
+        var saveOptions = () => {
+            log("saveOptions");
+            audioSpeakExercise = document.getElementById("chkAudioSpeakExercise").checked;
+            audioSpeakGo = document.getElementById("chkAudioSpeakGo").checked;
+            audioSecondTick = document.getElementById("chkAudioSecondTick").checked;
+            audioEndExercise = document.getElementById("chkAudioEndExercise").checked;
+            transitionTime = document.getElementById("txtTransitionTime").value;
+            workoutTitle = document.getElementById("txtTitle").value;
+            log("audioSpeakExercise: " + audioSpeakExercise);
+            log("audioSpeakGo: " + audioSpeakGo);
+            log("audioSecondTick: " + audioSecondTick);
+            log("audioEndExercise: " + audioEndExercise);
+            log("transitionTime: " + transitionTime);
+            log("workoutTitle: " + workoutTitle);
+        }
+
+        var submit = () => {
+            log("submit");
+            saveOptions();
+            saveExercises();
+
+            var updatedWorkout = {
+                'Id': workoutId,
+                'Title': workoutTitle,
+                'Exercises': exercises,
+                'AudioEndExercise': audioEndExercise,
+                'AudioSecondTick': audioSecondTick,
+                'AudioSpeakExercise': audioSpeakExercise,
+                'AudioSpeakGo': audioSpeakGo,
+                'TransitionTime': transitionTime
+            };
+
+            console.log(updatedWorkout);
+
+            $.ajax({
+                type: 'PUT',
+                url: '/EditWorkout?handler=UpdateWorkout',
+                data: updatedWorkout,
+                dataType: 'json',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("XSRF-TOKEN",
+                        $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
+                success: function (result) {
+                    console.log("AJAX: " + JSON.stringify(result));
+                    if (result.success) {
+                        updateDisplay();
+                    }
+                    else {
+                        notifyError();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("AJAX: " + JSON.stringify(xhr));
+                    notifyError();
+                }
+            });
+        }
+
+        var updateDisplay = () => {
+            log("updateDisplay");
+            document.getElementById("divEditWorkout").style.display = "none";
+            document.getElementById("divWorkoutUpdated").style.display = "block";
+            document.getElementById("pMessage").textContent = "Your workout, '" + workoutTitle + "', was updated. You can access it from the side menu.";
+        }
+
+    </script>
+
+</body>
+
+</html>
+
+@{
+
+}

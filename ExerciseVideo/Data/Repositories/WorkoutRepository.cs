@@ -5,29 +5,48 @@ namespace ExerciseVideo.Data.Repositories
 {
     public class WorkoutRepository
     {
-        public Context Context { get; set; }
+        public IDbContextFactory<Context> ContextFactory { get; set; }
 
-        public WorkoutRepository(Context context)
+        public WorkoutRepository(IDbContextFactory<Context> contextFactory)
         {
-            Context = context;
+            ContextFactory = contextFactory;
         }
 
         public void AddWorkout(Workout workout)
         {
-            Context.Workout.Add(workout);
-            Context.SaveChanges();
+            using (var context = ContextFactory.CreateDbContext())
+            {
+                context.Workout.Add(workout);
+                context.SaveChanges();
+            }
         }
 
         public Workout? GetWorkoutById(int workoutId)
         {
-            return Context.Workout.Where(w => w.Id == workoutId).SingleOrDefault();
+            using (var context = ContextFactory.CreateDbContext())
+            {
+                return context.Workout.Where(w => w.Id == workoutId).SingleOrDefault();
+            }
         }
 
         public List<Workout> GetWorkoutsByUserId(int userId)
         {
-            var allWorkouts = Context.Workout.ToList();
-            return allWorkouts.Where(w => w.UserId == userId).ToList();
+            using (var context = ContextFactory.CreateDbContext())
+            {
+                var allWorkouts = context.Workout.ToList();
+                return allWorkouts.Where(w => w.UserId == userId).ToList();
+            }
         }
+
+        public void UpdateWorkout(Workout workout)
+        {
+            using (var context = ContextFactory.CreateDbContext())
+            {
+                context.Workout.Update(workout);
+                context.SaveChanges();
+            }
+        }
+           
 
     }
 }

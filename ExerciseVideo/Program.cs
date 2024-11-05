@@ -18,13 +18,17 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddAntiforgery(o => o.HeaderName = "XSRF-TOKEN"); ;
+//builder.Services.AddDbContext<Context>(options =>
+    //options.UseSqlServer(builder.Configuration.GetConnectionString("Localhost")));
+builder.Services.AddDbContextFactory<Context>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Localhost")));
 builder.Services.AddScoped<TokenProvider>();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<WorkoutService>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<WorkoutRepository>();
-builder.Services.AddDbContext<Context>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Localhost")));
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<WorkoutService>();
+
+
 
 var app = builder.Build();
 

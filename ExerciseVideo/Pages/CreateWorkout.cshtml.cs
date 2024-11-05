@@ -1,13 +1,8 @@
-using ExerciseVideo.Data;
 using ExerciseVideo.Data.Entities;
-using ExerciseVideo.Data.Repositories;
 using ExerciseVideo.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 
@@ -16,17 +11,18 @@ namespace ExerciseVideo.Pages
     [Authorize]
     public class CreateWorkoutModel : PageModel
     {
-        private UserService Service { get; set; }
-        private int UserId{ get; set; }
-        public WorkoutRepository Repository { get; set; }
-        public CreateWorkoutModel(UserService userService, WorkoutRepository workoutRepository)
+        private int UserId { get; set; }
+        private UserService UserService { get; set; }
+
+        public WorkoutService WorkoutService { get; set; }
+        public CreateWorkoutModel(UserService userService, WorkoutService workoutService)
         {
-            Service = userService;
-            Repository = workoutRepository;
+            UserService = userService;
+            WorkoutService = workoutService;
         }
         public async void OnGetAsync()
         {
-            UserId = (await Service.GetCurrentUser(HttpContext)).Id;
+            UserId = (await UserService.GetCurrentUser(HttpContext)).Id;
         }
 
         public async Task<JsonResult> OnPostNewWorkout(WorkoutDto newWorkout)
@@ -36,9 +32,9 @@ namespace ExerciseVideo.Pages
                 Success = false
             };
 
-            UserId = (await Service.GetCurrentUser(HttpContext)).Id;
+            UserId = (await UserService.GetCurrentUser(HttpContext)).Id;
 
-            string validationErrors = ValidateWorkout(newWorkout);
+            string validationErrors = WorkoutService.ValidateWorkout(newWorkout);
 
             if (!string.IsNullOrEmpty(validationErrors))
             {
@@ -64,45 +60,11 @@ namespace ExerciseVideo.Pages
                 SettingsJson = JsonConvert.SerializeObject(settings)
             };
 
-            Repository.AddWorkout(workout);
+            WorkoutService.AddWorkout(workout);
 
             response.Success = true;
 
             return new JsonResult(response);
-        }
-
-        private string ValidateWorkout(WorkoutDto newWorkout)
-        {
-            string validationErrorMessage = string.Empty;
-
-            if (newWorkout == null)
-            {
-                validationErrorMessage = "Workout data is empty or was not received.";
-                return validationErrorMessage;
-            }
-
-            if (newWorkout.Id != 0)
-            {
-                validationErrorMessage += "ID cannot contain a value.";
-            }
-            if (string.IsNullOrEmpty(newWorkout.Title))
-            {
-                validationErrorMessage += "The workout title is blank.";
-            }
-            if (!Regex.Match(newWorkout.Title, "^[a-zA-Z0-9-_'.,;?!#$%&* ]*$").Success)
-            {
-                validationErrorMessage += "The workout title is invalid.";
-            }
-            if (newWorkout.Exercises == null || newWorkout.Exercises.Count == 0)
-            {
-                validationErrorMessage += "The workout does not contain any exercises.";
-            }
-            if (newWorkout.TransitionTime < 0 || newWorkout.TransitionTime > 10)
-            {
-                validationErrorMessage += "Transition time value is invalid.";
-            }
-
-            return validationErrorMessage;
         }
     }
 }
