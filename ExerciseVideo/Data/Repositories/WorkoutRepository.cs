@@ -34,7 +34,7 @@ namespace ExerciseVideo.Data.Repositories
             using (var context = ContextFactory.CreateDbContext())
             {
                 var allWorkouts = context.Workout.ToList();
-                return allWorkouts.Where(w => w.UserId == userId).ToList();
+                return allWorkouts.Where(w => w.UserId == userId && w.Active == true).ToList();
             }
         }
 

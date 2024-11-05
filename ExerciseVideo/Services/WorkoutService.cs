@@ -17,6 +17,13 @@ namespace ExerciseVideo.Services
             Repository.AddWorkout(workout);
         }
 
+        public void ArchiveWorkout(int workoutId)
+        {
+            var workout = GetWorkoutById(workoutId);
+            workout.Active = false;
+            UpdateWorkout(workout);
+        }
+
         public WorkoutDto ConvertWorkoutToWorkoutDto(Workout workout)
         {
             var settings = JsonConvert.DeserializeObject<WorkoutSettings>(workout.SettingsJson) ?? new WorkoutSettings();

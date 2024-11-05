@@ -55,6 +55,29 @@ namespace ExerciseVideo.Pages
             return Page();
         }
 
+        public async Task<JsonResult> OnPutArchiveWorkout(int workoutId)
+        {
+            var response = new BaseResponse()
+            {
+                Success = false
+            };
+
+            var userId = (await UserService.GetCurrentUser(HttpContext)).Id;
+            var rawWorkout = WorkoutService.GetWorkoutById((int)workoutId);
+
+            if (rawWorkout == null || rawWorkout.UserId != userId)
+            {
+                response.Message = "Unable to update";
+                return new JsonResult(response);
+            }
+
+            WorkoutService.ArchiveWorkout(workoutId);
+
+            response.Success = true;
+
+            return new JsonResult(response);
+        }
+
         public async Task<JsonResult> OnPutUpdateWorkout(WorkoutDto updatedWorkout)
         {
             var response = new BaseResponse()

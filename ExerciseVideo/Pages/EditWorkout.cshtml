@@ -88,7 +88,9 @@
         <br />
 
         <div>
-            <button onclick="submit()">Submit</button>
+            <button class="btn-secondary" onclick="window.location='/'">Back to Menu</button>
+            <button class="btn-primary" onclick="submit()">Submit</button>
+            <button class="btn-danger" onclick="archive()">Archive</button>
         </div>
 
     </div>
@@ -99,6 +101,11 @@
             <h2>Success!</h2>
             <p id="pMessage"></p>
         </div>
+
+        <br />
+        <br />
+
+        <button class="btn-secondary" onclick="window.location='/'">Back to Menu</button>
 
     </div>
 
@@ -115,7 +122,7 @@
         var exercises = new Array();
         var transitionTime;
         var workoutId = @Model.WorkoutId;
-        var workoutTitle;
+        var workoutTitle = '@Model.Title';
 
         var dragId;
         var numberOfExercises;
@@ -167,6 +174,35 @@
             log("addOriginalExercises");
             for (let i = 0; i < exercises.length; i++) {
                 addAnotherExercise(exercises[i].Name, exercises[i.Time]);
+            }
+        }
+
+        var archive = () => {
+            log("archive");
+            if (confirm("Are you sure you want to archive this workout?")) {
+                           $.ajax({
+                type: 'PUT',
+                url: '/EditWorkout?handler=ArchiveWorkout',
+                data: {workoutId: workoutId},
+                dataType: 'json',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("XSRF-TOKEN",
+                        $('input:hidden[name="__RequestVerificationToken"]').val());
+                },
+                success: function (result) {
+                    log("AJAX: " + JSON.stringify(result));
+                    if (result.success) {
+                        updateDisplay("archive");
+                    }
+                    else {
+                        notifyError("archive");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    log("AJAX: " + JSON.stringify(xhr));
+                    notifyError("archive");
+                }
+            });
             }
         }
 
@@ -245,8 +281,15 @@
 
         }
 
-        var notifyError = () => {
-            alert('There was a problem updating your exercise. Please try again');
+        var notifyError = (type = "update") => {
+            var message = '';
+            if (type = 'update') {
+                message = "updating";
+            }
+            else if (type = 'archive') {
+                message = 'archiving';
+            }
+            alert('There was a problem ' + message + ' your exercise. Please try again');
         }
 
         var saveExercises = () => {
@@ -294,8 +337,6 @@
                 'TransitionTime': transitionTime
             };
 
-            console.log(updatedWorkout);
-
             $.ajax({
                 type: 'PUT',
                 url: '/EditWorkout?handler=UpdateWorkout',
@@ -306,7 +347,7 @@
                         $('input:hidden[name="__RequestVerificationToken"]').val());
                 },
                 success: function (result) {
-                    console.log("AJAX: " + JSON.stringify(result));
+                    log("AJAX: " + JSON.stringify(result));
                     if (result.success) {
                         updateDisplay();
                     }
@@ -315,17 +356,24 @@
                     }
                 },
                 error: function (xhr, status, error) {
-                    console.log("AJAX: " + JSON.stringify(xhr));
+                    log("AJAX: " + JSON.stringify(xhr));
                     notifyError();
                 }
             });
         }
 
-        var updateDisplay = () => {
+        var updateDisplay = (type = 'update') => {
             log("updateDisplay");
             document.getElementById("divEditWorkout").style.display = "none";
             document.getElementById("divWorkoutUpdated").style.display = "block";
-            document.getElementById("pMessage").textContent = "Your workout, '" + workoutTitle + "', was updated. You can access it from the side menu.";
+            var message = '';
+            if (type == 'update') {
+                message = "Your workout, '" + workoutTitle + "', was updated. You can access it from the side menu.";
+            }
+            else if (type == "archive") {
+                 message = "Your workout, '" + workoutTitle + "', was archived.";
+            }
+            document.getElementById("pMessage").textContent = message;
         }
 
     </script>
